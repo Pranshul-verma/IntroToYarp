@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using ApiGateway.LoadBalancerPolicy;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Yarp.ReverseProxy.LoadBalancing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +31,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                  Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]))
         };
     });
-
+builder.Services.AddRateLimiter(options => { });
 // 👇 Authorization policy
 builder.Services.AddAuthorization(options =>
 {
@@ -38,20 +40,21 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser();
     });
 });
-
-
+// Adding LoadBalancer policy
+builder.Services.AddSingleton<ILoadBalancingPolicy, RoundRobinPolicy>();
+builder.Services.AddSingleton<ILoadBalancingPolicy, IpHashPolicy>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  app.UseSwagger();
-   app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
+//app.UseAuthentication();
 app.UseAuthorization();
 
 //app.MapControllers();

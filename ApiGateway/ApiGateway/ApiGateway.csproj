@@ -17,4 +17,13 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="ConsoleApp1">
+      <HintPath>..\..\..\..\LoadBlancer_RateLimiter\DummyApiUI\ConsoleApp1\ConsoleApp1\bin\Debug\net8.0\ConsoleApp1.dll</HintPath>
+    </Reference>
+    <Reference Include="LoadBalancerStrategy">
+      <HintPath>..\..\..\..\SystemDesign\Load Balancer\LoadBalancerConsoleApp\LoadBalancerStrategy\LoadBalancerStrategy\bin\Debug\LoadBalancerStrategy.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
