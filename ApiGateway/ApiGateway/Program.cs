@@ -1,7 +1,11 @@
 ﻿using ApiGateway.LoadBalancerPolicy;
+using ApiGateway.RateLimiter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 using Yarp.ReverseProxy.LoadBalancing;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +35,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                  Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]))
         };
     });
-builder.Services.AddRateLimiter(options => { });
+//builder.Services.AddRateLimiter(options =>
+//{
+//    options.AddPolicy("fixed_windowRLPolicy", httpContext =>
+//    {
+//        // Use the custom policy
+//        var policy = new FixedWindowRL();
+//        return policy.GetPartition(httpContext);
+//    });
+//});
 // 👇 Authorization policy
 builder.Services.AddAuthorization(options =>
 {
@@ -44,7 +56,6 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<ILoadBalancingPolicy, RoundRobinPolicy>();
 builder.Services.AddSingleton<ILoadBalancingPolicy, IpHashPolicy>();
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -53,13 +64,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-//app.UseAuthentication();
+//app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 //app.MapControllers();
 
 app.MapReverseProxy();
+
+app.UseMiddleware<FixedWindowRL>();
 
 app.Run();
 
