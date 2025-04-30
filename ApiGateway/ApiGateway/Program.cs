@@ -1,12 +1,14 @@
 ﻿using ApiGateway.LoadBalancerPolicy;
 using ApiGateway.RateLimiter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
 using Yarp.ReverseProxy.LoadBalancing;
+using Yarp.ReverseProxy.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,11 +70,17 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.MapControllers();
-
 app.MapReverseProxy();
 
-app.UseMiddleware<FixedWindowRL>();
-
+// code to Add condition to MiddleWare based on Tag...
+app.MapWhen(context =>
+context.GetEndpoint()?.
+Metadata?.GetMetadata<RouteModel>()?.Config?.Metadata?.TryGetValue("FixedWindowRL", out var value) == true &&
+        bool.TryParse(value, out var result) && result,
+        branch =>
+        {
+            branch.UseMiddleware<FixedWindowRL>();
+        }
+);
 app.Run();
 

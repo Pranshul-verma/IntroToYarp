@@ -1,4 +1,7 @@
-﻿namespace ApiGateway.RateLimiter
+﻿using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Model;
+
+namespace ApiGateway.RateLimiter
 {
     public class FixedWindowRL
     {
@@ -22,6 +25,11 @@
         {
             // Custom logic here
             Console.WriteLine("My Custom Middleware processing...");
+            //var endpoint = context.GetEndpoint();
+            //var useCustomMiddleware = endpoint?.Metadata.GetMetadata<RouteModel>()?.Config?.Metadata
+            //    .TryGetValue("UseCustomMiddleware", out var value) == true &&
+            //    bool.TryParse(value, out var result) && result;
+            //  var yarpRoute = metadata?.Metadata.GetMetadata<Microsoft.YARP.Service.Proxy.IReverseProxyFeature>()?.Route;
             if (AllowRequest())
             {
                 // Forward the request to the next middleware
